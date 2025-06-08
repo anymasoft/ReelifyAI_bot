@@ -44,7 +44,7 @@ class OzonParser:
                 "value": "79976617",
                 "domain": ".ozon.com",
                 "path": "/",
-                "sameSite": "lax",
+                "sameSite": "Lax",
                 "httpOnly": True,
                 "secure": True,
                 "expires": 1780928785
@@ -54,7 +54,7 @@ class OzonParser:
                 "value": "41",
                 "domain": ".ozon.com",
                 "path": "/",
-                "sameSite": "lax",
+                "sameSite": "Lax",
                 "httpOnly": False,
                 "secure": True,
                 "expires": 1780928785
@@ -64,7 +64,7 @@ class OzonParser:
                 "value": "8.79976617.L-gv-B3qSH6mP7umGDwtqA.41.AZY-nBSLXgF6ullbjYgcsX9x774GwSJK3oqP2utKpoV0z8LDeFAfAtOKkf2X-m5LaWEsSAk6DPWIu58xFbaDFcsF7MALB9uCwiHHNsy0Cw-8egc3IyuSG8mQ2ple6zi7Ig.20211029180833.20250608162623.XaoJg3VwlSVn2fIeBJmnkjjbm0VnKjOVSYG-NEmkM3g.1bcb02488bc602bae",
                 "domain": ".ozon.com",
                 "path": "/",
-                "sameSite": "lax",
+                "sameSite": "Lax",
                 "httpOnly": True,
                 "secure": True,
                 "expires": 1780928785
@@ -74,17 +74,17 @@ class OzonParser:
                 "value": "true",
                 "domain": ".ozon.com",
                 "path": "/",
-                "sameSite": "none",
+                "sameSite": "None",
                 "httpOnly": False,
-                "secure": False,
-                "expires": -1  # Сессионная куки
+                "secure": False
+                # Сессионная куки, без expires
             },
             {
                 "name": "abt_data",
                 "value": "7.X4zhVlIv1_rxcAKXHLQRWC_i0yIo7BqnSYdCym1uxRQ4RhCC-AnS8OUShekV-MZ4Uum89o2-O9FaldvAuk7NuD5vNb464r-ZtI6ni3QYfKUMQcITkKws9OGiVvHJahxpDcLNu9ZWSnwqnVD6NlkoJ-PB8661YJ8wT7E4FCq6XwtVRB9SZYfXx_zSLVUnBDOho8ZNZ9ofzEjnzE_yv_vFCIlSt14pRfuaF5z8-t0Rou-so4kZwLRo1vxzY2fslg7BJD-Os99SX7RehPzAeFDDs63momD4jVZrhipTX2nDpC8bp03JDx2wWCi2vaG1OzSgRSteuQXDyFOuum2bb_JtCnUeaHP_ZKizJk3fqJgMgiagHiC-4qtMSQ5CaqSXC-xIFrbQS5XwZAFw08IWQiNrlXsKYZPEQt4IX5O1R9c74lzSnZPxDKpYW6AVecd46jvDnJwrFk_NVbm86lF5vrBGHB3I-FLbbt2NA5ziRxjYRvHN66FZ7e463JZvLPraY4LNNDxIcIvEEh9KY1YxsdYlnQdBxlVnQ2ix8-PqWdkTCeBh9GUGzWIvZ6IQxih3-zVK4lQjY7r3",
                 "domain": ".ozon.com",
                 "path": "/",
-                "sameSite": "none",
+                "sameSite": "None",
                 "httpOnly": True,
                 "secure": True,
                 "expires": 1780887119
@@ -94,7 +94,7 @@ class OzonParser:
                 "value": "a0fa506ac4ada48203c1c6725c110eb5",
                 "domain": ".ozon.com",
                 "path": "/",
-                "sameSite": "none",
+                "sameSite": "None",
                 "httpOnly": True,
                 "secure": True,
                 "expires": 1780332055
@@ -104,7 +104,7 @@ class OzonParser:
                 "value": "8.79976617.L-gv-B3qSH6mP7umGDwtqA.41.AZY-nBSLXgF6ullbjYgcsX9x774GwSJK3oqP2utKpoV0z8LDeFAfAtOKkf2X-m5LaWEsSAk6DPWIu58xFbaDFcsF7MALB9uCwiHHNsy0Cw-8egc3IyuSG8mQ2ple6zi7Ig.20211029180833.20250608162623.e1eFXbwIjxYn42IoAk4bDYG5Ox8wFBCsWG8lNnbpy9U.1dd89bd79fd2d8baf",
                 "domain": ".ozon.com",
                 "path": "/",
-                "sameSite": "lax",
+                "sameSite": "Lax",
                 "httpOnly": True,
                 "secure": True,
                 "expires": 1780928785
@@ -114,7 +114,7 @@ class OzonParser:
                 "value": "1d21e62218142a7e59cc7da1308d817b",
                 "domain": ".ozon.com",
                 "path": "/",
-                "sameSite": "none",
+                "sameSite": "None",
                 "httpOnly": True,
                 "secure": True,
                 "expires": 1780887117
@@ -124,12 +124,27 @@ class OzonParser:
                 "value": "a0fa506ac4ada48203c1c6725c110eb5",
                 "domain": ".ozon.com",
                 "path": "/",
-                "sameSite": "none",
+                "sameSite": "None",
                 "httpOnly": False,
-                "secure": False,
-                "expires": -1  # Сессионная куки
+                "secure": False
+                # Сессионная куки, без expires
             }
         ]
+
+    def fix_cookie_samesite(self, cookie: dict) -> dict:
+        """Исправление значения sameSite для совместимости с Playwright."""
+        if 'sameSite' in cookie:
+            val = cookie['sameSite'].lower()
+            if val == 'lax':
+                cookie['sameSite'] = 'Lax'
+            elif val == 'strict':
+                cookie['sameSite'] = 'Strict'
+            elif val == 'none':
+                cookie['sameSite'] = 'None'
+        # Удаление expires для сессионных куки
+        if cookie.get('expires', 0) == -1:
+            cookie.pop('expires', None)
+        return cookie
 
     def clean_text(self, text: str) -> str:
         """Очистка текста от HTML-тегов, спецсимволов и лишних пробелов."""
@@ -147,12 +162,13 @@ class OzonParser:
             )
             page = await context.new_page()
             try:
-                # Логирование куки для дебага
-                logger.debug(f"Setting cookies: {[c['name'] for c in self.cookies]}")
+                # Исправление куки перед установкой
+                fixed_cookies = [self.fix_cookie_samesite(c) for c in self.cookies]
+                logger.debug(f"Setting cookies: {[c['name'] for c in fixed_cookies]}")
                 # Установка куки и загрузка главной страницы
                 await page.goto("https://www.ozon.com")
                 await page.wait_for_timeout(random.uniform(2000, 4000))
-                await context.add_cookies(self.cookies)
+                await context.add_cookies(fixed_cookies)
 
                 # Переход на целевую страницу
                 await page.goto(url)
@@ -243,10 +259,12 @@ class OzonParser:
                 )
                 page = await context.new_page()
                 try:
-                    logger.debug(f"Setting cookies for product page: {[c['name'] for c in self.cookies]}")
+                    # Исправление куки перед установкой
+                    fixed_cookies = [self.fix_cookie_samesite(c) for c in self.cookies]
+                    logger.debug(f"Setting cookies for product page: {[c['name'] for c in fixed_cookies]}")
                     await page.goto("https://www.ozon.com")
                     await page.wait_for_timeout(random.uniform(2000, 4000))
-                    await context.add_cookies(self.cookies)
+                    await context.add_cookies(fixed_cookies)
 
                     await page.goto(url)
                     await page.wait_for_selector("[data-widget='webProductHeading'], [data-widget='webCharacteristics'], .tsBody500Medium, .webDescription, .pdp-description-text, .pdp-details, .tsBodyM, .tsBodyL, [data-auto='description'], .product-description, .description-container, [data-widget='webProductDescription']", timeout=timeout)
