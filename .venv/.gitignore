@@ -1,0 +1,9 @@
+# created by virtualenv automatically
+*
+echo config.py >> .gitignore
+echo "*.pyc" >> .gitignore
+echo "__pycache__/" >> .gitignore
+git add .gitignore
+git commit -m "Ignore pyc and __pycache__"
+__pycache__/
+*.pyc
