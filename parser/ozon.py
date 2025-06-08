@@ -18,6 +18,7 @@ import random
 import hashlib
 import asyncio
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
+from proxybroker import Broker
 
 # Настройка логирования
 logging.basicConfig(
@@ -38,6 +39,12 @@ class OzonParser:
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
             "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
             "Referer": "https://www.ozon.com/",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "same-origin",
+            "Sec-Fetch-User": "?1",
         }
         self.cookies = [
             {
@@ -131,7 +138,6 @@ class OzonParser:
         ]
 
     def fix_cookie_samesite(self, cookie: dict) -> dict:
-        """Исправление значения sameSite для совместимости с Playwright."""
         if 'sameSite' in cookie:
             val = cookie['sameSite'].lower()
             if val == 'lax':
@@ -140,21 +146,41 @@ class OzonParser:
                 cookie['sameSite'] = 'Strict'
             elif val == 'none':
                 cookie['sameSite'] = 'None'
-        # Удаление expires для сессионных куки
         if cookie.get('expires', 0) == -1:
             cookie.pop('expires', None)
         return cookie
 
     def clean_text(self, text: str) -> str:
-        """Очистка текста от HTML-тегов, спецсимволов и лишних пробелов."""
-        text = re.sub(r'<[^>]+>', '', text)  # Удаление HTML-тегов
-        text = re.sub(r'[|•●→]', ' ', text)  # Удаление спецсимволов
-        text = re.sub(r'\s+', ' ', text)  # Удаление лишних пробелов
+        text = re.sub(r'<[^>]+>', '', text)
+        text = re.sub(r'[|•●→]', ' ', text)
+        text = re.sub(r'\s+', ' ', text)
         return text.strip()
+
+    async def get_proxy(self) -> dict | None:
+        """Получение прокси через proxybroker."""
+        proxy_queue = asyncio.Queue()
+        broker = Broker(proxy_queue)
+        tasks = await asyncio.gather(
+            broker.find(types=['HTTP', 'HTTPS'], limit=1),
+            return_exceptions=True
+        )
+        if tasks and not isinstance(tasks[0], Exception):
+            proxy = await proxy_queue.get()
+            return {
+                "server": f"{proxy.host}:{proxy.port}",
+                "username": proxy.username or "",
+                "password": proxy.password or ""
+            }
+        logger.warning("No proxy found")
+        return None
 
     async def fetch_page_playwright(self, url: str) -> str | None:
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=False)  # Для отладки
+            proxy = await self.get_proxy()
+            browser = await p.chromium.launch(
+                headless=False,
+                proxy=proxy if proxy else None
+            )
             context = await browser.new_context(
                 user_agent=self.headers["User-Agent"],
                 extra_http_headers=self.headers
@@ -167,11 +193,21 @@ class OzonParser:
                 await page.wait_for_timeout(random.uniform(2000, 4000))
                 await context.add_cookies(fixed_cookies)
 
-                await page.goto(url, timeout=30000, wait_until='networkidle')
-                # Проверка селекторов
+                # Случайные действия
+                await page.mouse.move(random.randint(100, 500), random.randint(100, 500))
+                await page.wait_for_timeout(random.uniform(500, 1000))
+
+                response = await page.goto(url, timeout=30000, wait_until='networkidle')
+                final_url = response.url
+                if final_url != url:
+                    logger.warning(f"Redirect detected: {url} -> {final_url}")
+
                 selectors = [
                     ".tile-root",
-                    "[data-widget='searchResultsV2']"
+                    "[data-widget='searchResultsV2']",
+                    "[data-widget='catalogResults']",
+                    ".tile-container",
+                    ".qj6_24"
                 ]
                 for selector in selectors:
                     try:
@@ -183,7 +219,6 @@ class OzonParser:
                 else:
                     raise Exception("No valid selector found for search results")
 
-                # Прокрутка для полной загрузки
                 await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
                 await page.wait_for_timeout(random.uniform(3000, 5000))
                 await page.evaluate("window.scrollTo(0, 0)")
@@ -192,7 +227,7 @@ class OzonParser:
                 timestamp = int(time.time())
                 with open(f"debug_ozon_search_{timestamp}.html", "w", encoding="utf-8") as f:
                     f.write(html)
-                if "Antibot Challenge Page" in html:
+                if "Доступ ограничен" in html or "captcha" in html.lower():
                     logger.error(f"Antibot page detected for URL: {url}")
                     return None
                 return html
@@ -246,7 +281,7 @@ class OzonParser:
             driver.get(url)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_any_elements_located((
-                    By.CSS_SELECTOR, ".tile-root, [data-widget='searchResultsV2']"
+                    By.CSS_SELECTOR, ".tile-root, [data-widget='searchResultsV2'], [data-widget='catalogResults'], .tile-container, .qj6_24"
                 ))
             )
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -257,7 +292,7 @@ class OzonParser:
             timestamp = int(time.time())
             with open(f"debug_ozon_search_{timestamp}.html", "w", encoding="utf-8") as f:
                 f.write(html)
-            if "Antibot Challenge Page" in html:
+            if "Доступ ограничен" in html or "captcha" in html.lower():
                 logger.error(f"Antibot page detected for URL: {url}")
                 return None
             return html
@@ -270,7 +305,11 @@ class OzonParser:
     async def fetch_product_page(self, url: str, timeout: int = 30000) -> str | None:
         if PARSER_MODE == "playwright":
             async with async_playwright() as p:
-                browser = await p.chromium.launch(headless=False)
+                proxy = await self.get_proxy()
+                browser = await p.chromium.launch(
+                    headless=False,
+                    proxy=proxy if proxy else None
+                )
                 context = await browser.new_context(
                     user_agent=self.headers["User-Agent"],
                     extra_http_headers=self.headers
@@ -278,41 +317,45 @@ class OzonParser:
                 page = await context.new_page()
                 try:
                     fixed_cookies = [self.fix_cookie_samesite(c) for c in self.cookies]
-                    logger.debug(f"Fetching product page with cookies: {[c['name'] for c in fixed_cookies]}")
-                    await page.goto("https://www.ozon.com", timeout=timeout, wait_until='networkidle')
-                    await page.wait_for_timeout(random.uniform(2, 4))
+                    logger.debug(f"Setting cookies for product page: {[c['name'] for c in fixed_cookies]}")
+                    await page.goto("https://www.ozon.com", timeout=30000, wait_until='networkidle')
+                    await page.wait_for_timeout(random.uniform(2000, 4000))
                     await context.add_cookies(fixed_cookies)
 
-                    await page.goto(url, timeout=timeout, wait_until='networkidle')
+                    response = await page.goto(url, timeout=30000, wait_until='networkidle')
+                    final_url = response.url
+                    if final_url != url:
+                        logger.warning(f"Redirect detected: {url} -> {final_url}")
+
                     await page.wait_for_selector(
                         "[data-widget='webCharacteristics'], .tsBody500Medium, .webDescription, .pdp-description-text, .pdp-details, .tsBodyM, .tsBodyL, [data-auto='description'], .product-description, .description-container, [data-widget='webProductDescription']",
                         timeout=timeout
                     )
                     await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-                    await page.wait_for_timeout(random.uniform(2, 4))
+                    await page.wait_for_timeout(random.uniform(3000, 5000))
                     await page.evaluate("window.scrollTo(0, 0)")
-                    await page.wait_for_timeout(random.uniform(2, 4))
+                    await page.wait_for_timeout(random.uniform(3000, 5000))
                     try:
-                        await page.click("[data-auto='showMoreDescription'], .show-moreButton, [data-state='webShowMoreButton']", timeout=5000)
-                        await page.wait_for_timeout(3000)
+                        await page.click("[data-auto='showMoreDescription'], .show-more, [data-state*='webShowMore']", timeout=5000)
+                        await page.wait_for_timeout(random.uniform(3000, 5000))
                     except:
-                        logger.debug(f"No 'Show More' button found for: {url}")
+                        logger.debug(f"No 'Show More' button found for URL: {url}")
                     await page.evaluate("window.scrollBy(0, 1); window.scrollBy(0, -1);")
-                    await page.wait_for_timeout(random.uniform(2, 4))
+                    await page.wait_for_timeout(random.uniform(2000, 4000))
                     html = await page.content()
                     url_hash = hashlib.md5(url.encode()).hexdigest()
                     timestamp = int(time.time())
                     with open(f"debug_ozon_product_{url_hash}_{timestamp}.html", "w", encoding="utf-8") as f:
                         f.write(html)
                     soup = BeautifulSoup(html, "html.parser")
-                    if not soup.select_one("[data-widget='webCharacteristics'], .tsBody500Medium, .webDescription, .pdp-description-text, .pdp-details, .tsBodyM, .tsBodyL, [data-auto='description'], .webProductDescription"):
-                        logger.warning(f"No product description found for: {url}")
+                    if not soup.select_one("[data-widget='webCharacteristics'], .tsBody500Medium, .webDescription, .pdp-description-text, .pdp-details, .tsBodyM, .tsBodyL, [data-auto='description'], .product-description, .description-container, [data-widget='webProductDescription']"):
+                        logger.warning(f"No product description found for URL: {url}")
                     return html
                 except Exception as e:
                     timestamp = int(time.time())
-                    await page.screenshot(path=f"product_error_{timestamp}.png", full_page=True)
+                    await page.screenshot(path=f"ozon_product_error_{timestamp}.png", full_page=True)
                     html = await page.content()
-                    with open(f"product_error_{timestamp}.html", "w", encoding="utf-8") as f:
+                    with open(f"ozon_product_error_{timestamp}.html", "w", encoding="utf-8") as f:
                         f.write(html)
                     logger.error(f"Error fetching product page {url} with Playwright: {str(e)}")
                     return None
@@ -351,15 +394,15 @@ class OzonParser:
                     EC.presence_of_element_located((By.CSS_SELECTOR, "[data-widget='webCharacteristics'], .tsBody500Medium, .webDescription, .pdp-description-text, .pdp-details, .tsBodyM, .tsBodyL, [data-auto='description'], .product-description, .description-container, [data-widget='webProductDescription']"))
                 )
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                time.sleep(random.uniform(2, 4))
+                time.sleep(random.uniform(3, 5))
                 driver.execute_script("window.scrollTo(0, 0);")
-                time.sleep(random.uniform(2, 4))
+                time.sleep(random.uniform(3, 5))
                 try:
-                    more_button = driver.find_element(By.CSS_SELECTOR, "[data-auto='showMoreDescription'], .show-moreButton, [data-state='webShowMoreButton']")
+                    more_button = driver.find_element(By.CSS_SELECTOR, "[data-auto='showMoreDescription'], .show-more, [data-state*='webShowMore']")
                     ActionChains(driver).move_to_element(more_button).click().perform()
-                    time.sleep(3)
+                    time.sleep(random.uniform(3, 5))
                 except:
-                    logger.debug(f"No 'Show More' button found for: {url}")
+                    logger.debug(f"No 'Show More' button found for URL: {url}")
                 driver.execute_script("window.scrollBy(0, 1); window.scrollBy(0, -1);")
                 time.sleep(random.uniform(2, 4))
                 html = driver.page_source
@@ -369,7 +412,7 @@ class OzonParser:
                     f.write(html)
                 soup = BeautifulSoup(html, "html.parser")
                 if not soup.select_one("[data-widget='webCharacteristics'], .tsBody500Medium, .webDescription, .pdp-description-text, .pdp-details, .tsBodyM, .tsBodyL, [data-auto='description'], .product-description, .description-container, [data-widget='webProductDescription']"):
-                    logger.warning(f"No product description found for: {url}")
+                    logger.warning(f"No product description found for URL: {url}")
                 return html
             except Exception as e:
                 logger.error(f"Error fetching product page {url} with Selenium: {str(e)}")
@@ -395,12 +438,12 @@ class OzonParser:
             logger.error(f"Failed to fetch page for query: {query}")
             return {"error": "Не удалось загрузить страницу"}
 
-        if "Antibot Challenge Page" in html:
+        if "Доступ ограничен" in html or "captcha" in html.lower():
             logger.error(f"Antibot page detected for query: {query}")
             return {"error": "Обнаружена страница антибот-защиты"}
 
         soup = BeautifulSoup(html, "html.parser")
-        items = soup.select(".tile-root")[:MAX_CARDS]
+        items = soup.select(".tile-root, [data-widget='searchResultsV2'] .tile-container, .qj6_24")[:MAX_CARDS]
         result = {
             "titles": [],
             "descriptions": [],
@@ -411,17 +454,21 @@ class OzonParser:
 
         max_product_pages = 20
         for i, item in enumerate(items):
-            title = item.select_one(".tsBody500Medium")
+            title = item.select_one(".tsBody500Medium, .tile-title, .tsBody, [data-auto-name='title']")
             if title:
                 result["titles"].append(self.clean_text(title.text))
 
-            desc = item.select_one(".p6b00-a4, .c301-a1")
+            desc = item.select_one(".p6b00-a4, .c301-a1, .tsBody400Small, .tsBodyControl400Small, .tile-info, [data-auto-name='price']")
             if desc:
                 result["descriptions"].append(self.clean_text(desc.text))
+            else:
+                desc_fallback = item.select_one(".desc, .priceData")
+                if desc_fallback:
+                    result["descriptions"].append(self.clean_text(desc_fallback.text))
 
-            img = item.select_one("img[src*='ozon.com']")
+            img = item.select_one("img[src*='ozon.com'], img.tile-image")
             if img and img.get("alt"):
-                result["alt_texts"].append(self.clean_text(img.get("alt")))
+                result["alt_texts"].append(self.clean_text(img["alt"]))
 
             if i < max_product_pages:
                 product_link = item.select_one("a[href^='/product/']")
@@ -436,9 +483,9 @@ class OzonParser:
                             if cleaned_desc:
                                 result["product_descriptions"].append(cleaned_desc)
                             else:
-                                logger.debug(f"Empty cleaned description for {product_url}")
+                                logger.warning(f"Empty cleaned description for URL: {product_url}")
                         else:
-                            logger.debug(f"No description found for {product_url}")
+                            logger.warning(f"No description found for URL: {product_url}")
 
             breadcrumb = soup.select_one("nav.breadcrumbs, .nav_24, .breadcrumb, .breadcrumbs-wrapper")
             if breadcrumb:
