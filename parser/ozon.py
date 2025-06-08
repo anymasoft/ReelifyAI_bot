@@ -39,15 +39,96 @@ class OzonParser:
             "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
         }
         self.cookies = [
-            {"name": "__Secure-user-id", "value": "79976617", "domain": "ozon.ru", "path": "/"},
-            {"name": "__Secure-ab-group", "value": "41", "domain": "ozon.ru", "path": "/"},
-            {"name": "__Secure-refresh-token", "value": "8.789766123.L-gq-B3qSH6mP7umGDwtqA.41.Ad3yVqRwHsuVyefOiBk59XlMZey0iu2POFpLjDTGipdWGeWWBLBF8ecuEpNPEljON1pmGmdh8AX8n1mNFL8Si9-jqmGuKDL3QixyZhAt8wdPEyuswK-EiPFtI7ugHG8xvA.20211029180833.20250601191306.l3Ngi-bWTJSvcjZ1g7v-kdfGBSfeSd5JcT3VjEW0-JQ.192c4f9eaad9baf30", "domain": "ozon.ru", "path": "/"},
-            {"name": "guest", "value": "true", "domain": "ozon.ru", "path": "/"},
-            {"name": "abt_data", "value": "7.mQrry5HXK64odPL4Wf8zixfQM0BOxIiLbZqW4V9TCeIiNRaA8oNoJu0m-nfCi5RJ70IeGYvqK4SIYpzeOb9MUhrGKD6o3PV9Q7O5vib0t8CmmDuMMBBPM8v-V_7ZUTYrFC0NcQi_Pb49NJfXWnbVzYQ_nKvMdzcIDm3oPLqXzBZ_QN-ikgV8_cxpJUZWJSdE23HJCDHLA0ezK7GJSXidAdpbFgu60Tj8W2FazsD42CUkhXvcLUUuIZVfbZ6CLLXFp99l0mrBv4w_yB3fheqER3Jxv8jVYjc0T6NX1Kb0UdxvRyWq4xPJH-9_9IZho7t77h4w4oFZhyL8H2AfpB8PyfLCKE312ndKoAYLCUX67R0Fd1uUcYZ-Z-0XdQAvoNcPEfxL7r7iXrYc4uFx7L03g6Kuo_-rB_EBW2wIgx2bMoN2aRTCl7GbM2_dN4PPBMKz_ouHASYeMvzTor3O2Br1F9B5XfFg3PRz8tN2TIxQtFJ5Hr2-gkl9_rO4j-_C6_K8Z9BpXzvzFJc3CQ", "domain": "ozon.ru", "path": "/"},
-            {"name": "__Secure-ext_xcid", "value": "a0fa506ac4ada48203c1c6725c110eb5", "domain": "ozon.ru", "path": "/"},
-            {"name": "__Secure-access-token", "value": "8.79976617.L-gv-B3qSH6mP7umGDwtqA.41.Ad3yVqRwHsuVyefOiBk59XlMZey0iu2POFpLjDTGipdWGeWWBLBF8ecuEpNPEljON1pmGmdh8AX8n1mNFL8Si9-jqmGuKDL3QixyZhAt8wdPEyuswK-EiPFtI7ugHG8xvA.20211029180833.20250601191306.42aKVf6eSzjkZSSt7cgUedKQ07JISQ1oveTEES8i7Qo.1a50554bcc2a4813d", "domain": "ozon.ru", "path": "/"},
-            {"name": "__Secure-ETC", "value": "1d21e62218142a7e59cc7da1308d817b", "domain": "ozon.ru", "path": "/"},
-            {"name": "xcid", "value": "a0fa506ac4ada48203c1c6725c110eb5", "domain": "ozon.ru", "path": "/"}
+            {
+                "name": "__Secure-user-id",
+                "value": "79976617",
+                "domain": ".ozon.com",
+                "path": "/",
+                "sameSite": "lax",
+                "httpOnly": True,
+                "secure": True,
+                "expires": 1780928785
+            },
+            {
+                "name": "__Secure-ab-group",
+                "value": "41",
+                "domain": ".ozon.com",
+                "path": "/",
+                "sameSite": "lax",
+                "httpOnly": False,
+                "secure": True,
+                "expires": 1780928785
+            },
+            {
+                "name": "__Secure-refresh-token",
+                "value": "8.79976617.L-gv-B3qSH6mP7umGDwtqA.41.AZY-nBSLXgF6ullbjYgcsX9x774GwSJK3oqP2utKpoV0z8LDeFAfAtOKkf2X-m5LaWEsSAk6DPWIu58xFbaDFcsF7MALB9uCwiHHNsy0Cw-8egc3IyuSG8mQ2ple6zi7Ig.20211029180833.20250608162623.XaoJg3VwlSVn2fIeBJmnkjjbm0VnKjOVSYG-NEmkM3g.1bcb02488bc602bae",
+                "domain": ".ozon.com",
+                "path": "/",
+                "sameSite": "lax",
+                "httpOnly": True,
+                "secure": True,
+                "expires": 1780928785
+            },
+            {
+                "name": "guest",
+                "value": "true",
+                "domain": ".ozon.com",
+                "path": "/",
+                "sameSite": "none",
+                "httpOnly": False,
+                "secure": False,
+                "expires": -1  # Сессионная куки
+            },
+            {
+                "name": "abt_data",
+                "value": "7.X4zhVlIv1_rxcAKXHLQRWC_i0yIo7BqnSYdCym1uxRQ4RhCC-AnS8OUShekV-MZ4Uum89o2-O9FaldvAuk7NuD5vNb464r-ZtI6ni3QYfKUMQcITkKws9OGiVvHJahxpDcLNu9ZWSnwqnVD6NlkoJ-PB8661YJ8wT7E4FCq6XwtVRB9SZYfXx_zSLVUnBDOho8ZNZ9ofzEjnzE_yv_vFCIlSt14pRfuaF5z8-t0Rou-so4kZwLRo1vxzY2fslg7BJD-Os99SX7RehPzAeFDDs63momD4jVZrhipTX2nDpC8bp03JDx2wWCi2vaG1OzSgRSteuQXDyFOuum2bb_JtCnUeaHP_ZKizJk3fqJgMgiagHiC-4qtMSQ5CaqSXC-xIFrbQS5XwZAFw08IWQiNrlXsKYZPEQt4IX5O1R9c74lzSnZPxDKpYW6AVecd46jvDnJwrFk_NVbm86lF5vrBGHB3I-FLbbt2NA5ziRxjYRvHN66FZ7e463JZvLPraY4LNNDxIcIvEEh9KY1YxsdYlnQdBxlVnQ2ix8-PqWdkTCeBh9GUGzWIvZ6IQxih3-zVK4lQjY7r3",
+                "domain": ".ozon.com",
+                "path": "/",
+                "sameSite": "none",
+                "httpOnly": True,
+                "secure": True,
+                "expires": 1780887119
+            },
+            {
+                "name": "__Secure-ext_xcid",
+                "value": "a0fa506ac4ada48203c1c6725c110eb5",
+                "domain": ".ozon.com",
+                "path": "/",
+                "sameSite": "none",
+                "httpOnly": True,
+                "secure": True,
+                "expires": 1780332055
+            },
+            {
+                "name": "__Secure-access-token",
+                "value": "8.79976617.L-gv-B3qSH6mP7umGDwtqA.41.AZY-nBSLXgF6ullbjYgcsX9x774GwSJK3oqP2utKpoV0z8LDeFAfAtOKkf2X-m5LaWEsSAk6DPWIu58xFbaDFcsF7MALB9uCwiHHNsy0Cw-8egc3IyuSG8mQ2ple6zi7Ig.20211029180833.20250608162623.e1eFXbwIjxYn42IoAk4bDYG5Ox8wFBCsWG8lNnbpy9U.1dd89bd79fd2d8baf",
+                "domain": ".ozon.com",
+                "path": "/",
+                "sameSite": "lax",
+                "httpOnly": True,
+                "secure": True,
+                "expires": 1780928785
+            },
+            {
+                "name": "__Secure-ETC",
+                "value": "1d21e62218142a7e59cc7da1308d817b",
+                "domain": ".ozon.com",
+                "path": "/",
+                "sameSite": "none",
+                "httpOnly": True,
+                "secure": True,
+                "expires": 1780887117
+            },
+            {
+                "name": "xcid",
+                "value": "a0fa506ac4ada48203c1c6725c110eb5",
+                "domain": ".ozon.com",
+                "path": "/",
+                "sameSite": "none",
+                "httpOnly": False,
+                "secure": False,
+                "expires": -1  # Сессионная куки
+            }
         ]
 
     def clean_text(self, text: str) -> str:
@@ -67,9 +148,9 @@ class OzonParser:
             page = await context.new_page()
             try:
                 # Логирование куки для дебага
-                logger.debug(f"Setting cookies: {self.cookies}")
+                logger.debug(f"Setting cookies: {[c['name'] for c in self.cookies]}")
                 # Установка куки и загрузка главной страницы
-                await page.goto("https://www.ozon.ru")
+                await page.goto("https://www.ozon.com")
                 await page.wait_for_timeout(random.uniform(2000, 4000))
                 await context.add_cookies(self.cookies)
 
@@ -117,10 +198,20 @@ class OzonParser:
         })
 
         try:
-            driver.get("https://www.ozon.ru")
+            driver.get("https://www.ozon.com")
             time.sleep(random.uniform(2, 4))
             for cookie in self.cookies:
-                driver.add_cookie(cookie)
+                selenium_cookie = {
+                    "name": cookie["name"],
+                    "value": cookie["value"],
+                    "domain": cookie["domain"],
+                    "path": cookie["path"],
+                    "httpOnly": cookie.get("httpOnly", False),
+                    "secure": cookie.get("secure", False),
+                }
+                if cookie.get("expires", -1) > 0:
+                    selenium_cookie["expiry"] = int(cookie["expires"])
+                driver.add_cookie(selenium_cookie)
             driver.get(url)
             WebDriverWait(driver, 20).until(
                 EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".tile-root"))
@@ -152,8 +243,8 @@ class OzonParser:
                 )
                 page = await context.new_page()
                 try:
-                    logger.debug(f"Setting cookies for product page: {self.cookies}")
-                    await page.goto("https://www.ozon.ru")
+                    logger.debug(f"Setting cookies for product page: {[c['name'] for c in self.cookies]}")
+                    await page.goto("https://www.ozon.com")
                     await page.wait_for_timeout(random.uniform(2000, 4000))
                     await context.add_cookies(self.cookies)
 
@@ -201,10 +292,20 @@ class OzonParser:
 
             driver = webdriver.Edge(service=Service(EdgeChromiumDriverManager().install()), options=options)
             try:
-                driver.get("https://www.ozon.ru")
+                driver.get("https://www.ozon.com")
                 time.sleep(random.uniform(2, 4))
                 for cookie in self.cookies:
-                    driver.add_cookie(cookie)
+                    selenium_cookie = {
+                        "name": cookie["name"],
+                        "value": cookie["value"],
+                        "domain": cookie["domain"],
+                        "path": cookie["path"],
+                        "httpOnly": cookie.get("httpOnly", False),
+                        "secure": cookie.get("secure", False),
+                    }
+                    if cookie.get("expires", -1) > 0:
+                        selenium_cookie["expiry"] = int(cookie["expires"])
+                    driver.add_cookie(selenium_cookie)
                 driver.get(url)
                 WebDriverWait(driver, timeout // 1000).until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, "[data-widget='webProductHeading'], [data-widget='webCharacteristics'], .tsBody500Medium, .webDescription, .pdp-description-text, .pdp-details, .tsBodyM, .tsBodyL, [data-auto='description'], .product-description, .description-container, [data-widget='webProductDescription']"))
@@ -281,14 +382,14 @@ class OzonParser:
                 if desc_fallback:
                     result["descriptions"].append(self.clean_text(desc_fallback.text))
 
-            img = item.select_one("img[src*='ozon.ru'], img.tile-image")
+            img = item.select_one("img[src*='ozon.com'], img.tile-image")
             if img and img.get("alt"):
                 result["alt_texts"].append(self.clean_text(img["alt"]))
 
             if i < max_product_pages:
                 product_link = item.select_one("a.tile-hover-target")
                 if product_link and product_link.get("href"):
-                    product_url = "https://www.ozon.ru" + product_link["href"]
+                    product_url = "https://www.ozon.com" + product_link["href"]
                     product_html = await self.fetch_product_page(product_url)
                     if product_html:
                         product_soup = BeautifulSoup(product_html, "html.parser")
