@@ -1,0 +1,32 @@
+2025-06-08 06:47:18,226 - aiogram.dispatcher - INFO - Start polling
+2025-06-08 06:47:18,516 - aiogram.dispatcher - INFO - Run polling for bot @ReelifyAI_bot id=7812680497 - 'ReelifyAI'
+2025-06-08 06:47:25,611 - bot.handlers - INFO - User 432400514 requested help
+2025-06-08 06:47:25,921 - aiogram.event - INFO - Update id=279549762 is handled. Duration 344 ms by bot id=7812680497
+2025-06-08 06:47:27,358 - aiogram.event - INFO - Update id=279549763 is handled. Duration 109 ms by bot id=7812680497
+2025-06-08 06:47:28,961 - bot.handlers - INFO - User 432400514 requested feedback
+2025-06-08 06:47:29,060 - aiogram.event - INFO - Update id=279549764 is handled. Duration 109 ms by bot id=7812680497
+2025-06-08 06:47:29,935 - bot.handlers - INFO - User 432400514 requested history
+2025-06-08 06:47:30,041 - aiogram.event - INFO - Update id=279549765 is handled. Duration 94 ms by bot id=7812680497
+2025-06-08 06:47:31,232 - bot.handlers - INFO - User 432400514 clicked callback: history_4
+2025-06-08 06:47:31,334 - aiogram.event - INFO - Update id=279549766 is handled. Duration 94 ms by bot id=7812680497
+2025-06-08 06:47:35,161 - bot.handlers - INFO - User 432400514 sent text: ботинки зимние женские
+2025-06-08 06:47:35,161 - bot.handlers - INFO - Processing query for user 432400514: ботинки зимние женские
+2025-06-08 06:47:35,161 - storage.redis - INFO - Checking request limit for user 432400514, DEBUG_MODE=True
+2025-06-08 06:47:35,161 - WDM - INFO - ====== WebDriver manager ======
+2025-06-08 06:47:36,054 - WDM - INFO - Get LATEST edgedriver version for Edge 137.0.3296
+2025-06-08 06:47:36,241 - WDM - INFO - Get LATEST edgedriver version for Edge 137.0.3296
+2025-06-08 06:47:36,394 - WDM - INFO - Driver [C:\Users\User\.wdm\drivers\edgedriver\win64\137.0.3296.68\msedgedriver.exe] found in cache
+2025-06-08 06:47:54,667 - parser.ozon - INFO - Parsed 20 items for query: ботинки зимние женские
+2025-06-08 06:47:54,669 - bot.handlers - INFO - Parse result for user 432400514: {'titles': ['Ботинки', 'Ботинки', 'Ботинки ZOLINBERG', 'Ботинки Vicappy', 'Ботинки By Ane', 'Ботинки YZYNX', 'Ботинки', 'Ботинки YZYNX Обувная серия', 'Ботинки', 'Ботинки', 'Ботинки', 'Ботинки', 'Ботинки ARPSTAR Угги/ботинки женские', 'Ботинки', 'Ботинки', 'Ботинки Your Way', 'Ботинки', 'Ботинки Зимние ботинки', 'Ботинки', 'Ботинки'], 'descriptions': ['Ботинки', 'Ботинки', 'Ботинки ZOLINBERG', 'Ботинки Vicappy', 'Ботинки By Ane', 'Ботинки YZYNX', 'Ботинки', 'Ботинки YZYNX Обувная серия', 'Ботинки', 'Ботинки', 'Ботинки', 'Ботинки', 'Ботинки ARPSTAR Угги/ботинки женские', 'Ботинки', 'Ботинки', 'Ботинки Your Way', 'Ботинки', 'Ботинки Зимние ботинки', 'Ботинки', 'Ботинки'], 'alt_texts': [], 'breadcrumbs': []}
+2025-06-08 06:47:54,672 - bot.handlers - ERROR - Error in process_query for user 432400514: Invalid format specifier ' "фраза", "count": N' for object of type 'str'
+Traceback (most recent call last):
+  File "C:\Users\User\Documents\PycharmProjects\@ReelifyAI_bot\bot\handlers.py", line 87, in process_query
+    ngram_result = gpt_processor.process_ngrams(query, parse_result)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\User\Documents\PycharmProjects\@ReelifyAI_bot\analyzer\gpt_processor.py", line 28, in process_ngrams
+    prompt = f"""
+             ^^^^
+ValueError: Invalid format specifier ' "фраза", "count": N' for object of type 'str'
+2025-06-08 06:47:55,042 - aiogram.event - INFO - Update id=279549767 is handled. Duration 19890 ms by bot id=7812680497
+2025-06-08 06:49:02,863 - aiogram.dispatcher - INFO - Polling stopped
+2025-06-08 06:49:03,118 - aiogram.dispatcher - INFO - Polling stopped for bot @ReelifyAI_bot id=7812680497 - 'ReelifyAI'

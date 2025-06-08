@@ -1,0 +1,9 @@
+BOT_TOKEN = "7812680497:AAH9O2bQJj9mys1jvCUdWAfC2bUlpm1CRtc"
+OZON_SEARCH_URL = "https://www.ozon.ru/search/"
+MAX_CARDS = 20
+CACHE_TTL = 86400  # 24 часа
+REQUEST_LIMIT = 5  # 5 запросов/час
+REQUEST_TTL = 3600  # 1 час
+PARSER_MODE = "selenium"  # "selenium" или "aiohttp"
+DEBUG_MODE = True  # Отключение лимитов для разработки
+OPENAI_API_KEY = "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"

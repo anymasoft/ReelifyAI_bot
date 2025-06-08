@@ -1,0 +1,6 @@
+aiogram==3.13.1
+aiohttp==3.10.5
+beautifulsoup4==4.12.3
+nltk==3.9.1
+redis==5.0.8
+proxybroker==0.3.2
